@@ -567,7 +567,7 @@
                 this.currentEnergy = Math.min(this.maxEnergy, this.currentEnergy + energyRecovered);
             }
 
-            saveGameData() {
+                        saveGameData() {
                 const gameData = {
                     totalCoins: this.totalCoins,
                     coinsPerTap: this.coinsPerTap,
@@ -580,8 +580,16 @@
                     tapBoostCost: this.tapBoostCost,
                     regenBoostCost: this.regenBoostCost
                 };
+
+                // ساخت چک‌سام: مقادیر مهم را با کلید مخفی ترکیب می‌کنیم
+                const checksumString = `${gameData.totalCoins}-${gameData.coinsPerTap}-${gameData.maxEnergy}-${SECRET_KEY}`;
+                
+                // چک‌سام را به آبجکت داده‌ها اضافه کرده و آن را کدگذاری می‌کنیم تا ناخوانا باشد
+                gameData.checksum = btoa(checksumString);
+
                 localStorage.setItem('bardiyaCoinData', JSON.stringify(gameData));
             }
+
 
             initializeGame() {
                 this.updateDisplay();
