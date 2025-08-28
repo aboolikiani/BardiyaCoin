@@ -698,10 +698,34 @@
                 }, 100);
             }
 
-            updateDisplay() {
-                document.getElementById('totalCoinsMain').textContent = this.totalCoins.toLocaleString('fa-IR');
-                document.getElementById('coinsPerTap').textContent = this.coinsPerTap.toLocaleString('fa-IR');
-                document.getElementById('totalTaps').textContent = this.totalTaps.toLocaleString('fa-IR');
+                    class BardiyaCoin {
+            // ... (کدهای قبلی شما مثل constructor, loadGameData و ...)
+
+            // این تابع جدید را اینجا اضافه کنید
+            formatNumber(num) {
+                if (num < 1000) {
+                    // اگر عدد کمتر از هزار بود، همان را برگردان
+                    return num.toLocaleString('fa-IR');
+                } else if (num < 1000000) {
+                    // اگر بین هزار تا یک میلیون بود (K)
+                    // عدد را بر ۱۰۰۰ تقسیم کن و تا یک رقم اعشار گرد کن
+                    return (num / 1000).toFixed(1).replace('.0', '') + 'K';
+                } else if (num < 1000000000) {
+                    // اگر بین یک میلیون تا یک میلیارد بود (M)
+                    return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+                } else {
+                    // اگر یک میلیارد یا بیشتر بود (B)
+                    return (num / 1000000000).toFixed(1).replace('.0', '') + 'B';
+                }
+            }
+
+                        updateDisplay() {
+                // از تابع formatNumber برای نمایش اعداد استفاده می‌کنیم
+                document.getElementById('totalCoinsMain').textContent = this.formatNumber(this.totalCoins);
+                document.getElementById('coinsPerTap').textContent = this.formatNumber(this.coinsPerTap);
+                document.getElementById('totalTaps').textContent = this.formatNumber(this.totalTaps);
+
+                // بقیه مقادیر نیازی به فرمت‌دهی ندارند و مثل قبل باقی می‌مانند
                 document.getElementById('currentEnergy').textContent = this.currentEnergy.toLocaleString('fa-IR');
                 document.getElementById('maxEnergy').textContent = this.maxEnergy.toLocaleString('fa-IR');
                 
@@ -712,13 +736,15 @@
                 this.updateUpgradeButtons();
             }
 
+
             updateUpgradeButtons() {
-                // بروزرسانی متن قیمت‌ها
-                document.getElementById('energyCost').innerHTML = `+100 ظرفیت (${this.energyBoostCost.toLocaleString('fa-IR')} سکه)`;
-                document.getElementById('tapCost').innerHTML = `+1 سکه در تپ (${this.tapBoostCost.toLocaleString('fa-IR')} سکه)`;
-                document.getElementById('regenCost').innerHTML = `+1 انرژی/ثانیه (${this.regenBoostCost.toLocaleString('fa-IR')} سکه)`;
+                        updateUpgradeButtons() {
+                // بروزرسانی متن قیمت‌ها با استفاده از تابع formatNumber
+                document.getElementById('energyCost').innerHTML = `+100 ظرفیت (${this.formatNumber(this.energyBoostCost)} سکه)`;
+                document.getElementById('tapCost').innerHTML = `+1 سکه در تپ (${this.formatNumber(this.tapBoostCost)} سکه)`;
+                document.getElementById('regenCost').innerHTML = `+1 انرژی/ثانیه (${this.formatNumber(this.regenBoostCost)} سکه)`;
                 
-                // بررسی و اعمال قفل
+                // بررسی و اعمال قفل (این بخش بدون تغییر باقی می‌ماند)
                 const energyBtn = document.getElementById('energyBoostBtn');
                 const tapBtn = document.getElementById('tapBoostBtn');
                 const regenBtn = document.getElementById('regenBoostBtn');
@@ -741,6 +767,7 @@
                     regenBtn.classList.remove('locked');
                 }
             }
+
 
             startEnergyRegeneration() {
                 setInterval(() => {
