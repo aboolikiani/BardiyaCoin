@@ -534,21 +534,49 @@
                 document.addEventListener('dragstart', (e) => e.preventDefault());
             }
 
-            loadGameData() {
+                        loadGameData() {
                 const savedData = localStorage.getItem('bardiyaCoinData');
                 if (savedData) {
                     const data = JSON.parse(savedData);
+
+                    // --- بخش بررسی چک‌سام ---
+                    // اگر چک‌سام در داده‌های ذخیره شده وجود داشت
+                    if (data.checksum) {
+                        // چک‌سام مورد انتظار را با همان فرمول قبلی دوباره می‌سازیم
+                        const expectedChecksumString = `${data.totalCoins}-${data.coinsPerTap}-${data.maxEnergy}-${SECRET_KEY}`;
+                        const expectedChecksum = btoa(expectedChecksumString);
+
+                        // مقایسه می‌کنیم. اگر با هم برابر نبودند یعنی تقلب شده
+                        if (data.checksum !== expectedChecksum) {
+                            alert("تقلب شناسایی شد! بازی از نو شروع می‌شود.");
+                            localStorage.removeItem('bardiyaCoinData'); // داده‌های دستکاری شده را پاک کن
+                            window.location.reload(); // صفحه را رفرش کن تا بازی ریست شود
+                            return; // ادامه لود شدن را متوقف کن
+                        }
+                    }
+                    // --- پایان بخش بررسی چک‌سام ---
+
+
+                    // اگر چک‌سام درست بود (یا وجود نداشت)، اطلاعات را به صورت عادی بارگذاری کن
                     this.totalCoins = data.totalCoins || 0;
                     this.coinsPerTap = data.coinsPerTap || 1;
                     this.totalTaps = data.totalTaps || 0;
-                    this.currentEnergy = data.currentEnergy || 200;
                     this.maxEnergy = data.maxEnergy || 200;
                     this.energyRegenRate = data.energyRegenRate || 1;
                     this.lastSaveTime = data.lastSaveTime || Date.now();
                     this.energyBoostCost = data.energyBoostCost || 100;
                     this.tapBoostCost = data.tapBoostCost || 75;
                     this.regenBoostCost = data.regenBoostCost || 100;
+                    
+                    // محاسبه انرژی بازیابی شده در طول غیبت (این بخش مهم است و باید بماند)
+                    const timePassed = Date.now() - (data.lastSaveTime || Date.now());
+                    const energyRecovered = Math.floor((timePassed / 1000) * this.energyRegenRate);
+                    // برای `currentEnergy` باید از `data.currentEnergy` استفاده شود
+                    this.currentEnergy = Math.min(this.maxEnergy, (data.currentEnergy || this.maxEnergy) + energyRecovered);
+
+
                 } else {
+                    // اگر هیچ داده‌ای برای لود کردن وجود نداشت (اجرای بار اول)
                     this.totalCoins = 0;
                     this.coinsPerTap = 1;
                     this.totalTaps = 0;
@@ -560,12 +588,8 @@
                     this.tapBoostCost = 75;
                     this.regenBoostCost = 100;
                 }
-
-                // محاسبه انرژی بازیابی شده در طول غیبت
-                const timePassed = Date.now() - this.lastSaveTime;
-                const energyRecovered = Math.floor((timePassed / 1000) * this.energyRegenRate);
-                this.currentEnergy = Math.min(this.maxEnergy, this.currentEnergy + energyRecovered);
             }
+
 
                         saveGameData() {
                 const gameData = {
