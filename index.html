@@ -380,6 +380,135 @@
             transform: translateY(0);
         }
 
+        .leaderboard-section {
+            margin-top: 10px;
+        }
+
+        .leaderboard-toggle {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .leaderboard-toggle:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .leaderboard-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffd700;
+            margin: 0;
+        }
+
+        .leaderboard-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .leaderboard-content.show {
+            max-height: 500px;
+        }
+
+
+
+        .leaderboard-list {
+            min-height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .leaderboard-empty {
+            text-align: center;
+            padding: 40px 20px;
+            opacity: 0.7;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .empty-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffd700;
+        }
+
+        .empty-subtext {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .leaderboard-item.current-user {
+            border: 2px solid #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-rank {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffd700;
+            min-width: 30px;
+        }
+
+        .player-rank.first {
+            color: #ffd700;
+        }
+
+        .player-rank.second {
+            color: #c0c0c0;
+        }
+
+        .player-rank.third {
+            color: #cd7f32;
+        }
+
+        .player-name {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .player-score {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+
+
         .footer {
             text-align: center;
             padding: 20px;
@@ -541,6 +670,21 @@
                 </div>
             </div>
         </div>
+
+        <div class="leaderboard-section">
+            <div class="leaderboard-toggle" onclick="toggleLeaderboard()">
+                <h3 class="leaderboard-title">🏆 لیدربورد</h3>
+            </div>
+            <div class="leaderboard-content" id="leaderboardContent">
+                <div class="leaderboard-list" id="leaderboardList">
+                    <div class="leaderboard-empty">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-text">لیدربورد خالی است</div>
+                        <div class="empty-subtext">هنوز هیچ امتیازی ثبت نشده است</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="reset-section">
@@ -560,6 +704,8 @@
                 this.initializeGame();
                 this.startEnergyRegeneration();
             }
+
+
 
             loadGameData() {
                 const savedData = localStorage.getItem('bardiyaCoinData');
@@ -1076,9 +1222,16 @@
             content.classList.toggle('show');
         }
 
+        function toggleLeaderboard() {
+            const content = document.getElementById('leaderboardContent');
+            content.classList.toggle('show');
+        }
+
+
+
         function resetGame() {
             game.resetGame();
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976a4861a76c4f36',t:'MTc1NjQ1MTk5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976aa8bd04f432de',t:'MTc1NjQ1NTk0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
