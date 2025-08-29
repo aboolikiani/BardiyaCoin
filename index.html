@@ -45,10 +45,26 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
 
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 8px;
+        }
+
+        .game-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
         .logo {
             font-size: 2.2rem;
             font-weight: 700;
-            margin-bottom: 8px;
             text-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
             background: linear-gradient(45deg, #ffd700, #ffed4e);
             -webkit-background-clip: text;
@@ -570,6 +586,11 @@
                 border-width: 6px;
             }
             
+            .game-logo {
+                width: 40px;
+                height: 40px;
+            }
+            
             .logo {
                 font-size: 1.8rem;
             }
@@ -652,7 +673,10 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo">بردیا کوین</div>
+        <div class="logo-container">
+            <img src="https://aboolikiani.github.io/BardiyaCoin/icon.jpg" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
+            <div class="logo">بردیا کوین</div>
+        </div>
         <div class="subtitle">Bardiya Coin</div>
     </div>
 
@@ -1419,5 +1443,5 @@
             });
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976b7f7c73c1d25d',t:'MTc1NjQ2NDczNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976bc1bf7097367d',t:'MTc1NjQ2NzQ1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
