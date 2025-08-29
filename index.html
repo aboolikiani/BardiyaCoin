@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بردیا کوین - Bardiya Coin</title>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * {
             margin: 0;
@@ -683,6 +685,7 @@
                         <div class="empty-subtext">هنوز هیچ امتیازی ثبت نشده است</div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -703,6 +706,7 @@
                 this.loadGameData();
                 this.initializeGame();
                 this.startEnergyRegeneration();
+                this.initSupabase();
             }
 
 
@@ -1199,6 +1203,111 @@
                     }
                 }, 2000);
             }
+
+            // ⚙️ تنظیمات Supabase
+            initSupabase() {
+                this.supabaseConfig = {
+                    url: 'https://mabnzlqnqpjwzmsdqdvq.supabase.co',      // ⚠️ آدرس پروژه Supabase شما
+                    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hYm56bHFucXBqd3ptc2RxZHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NTM1MjYsImV4cCI6MjA3MjAyOTUyNn0.eK8Sm1Lk6IJ_SPoQQBOc5VjxDwldrxO3AlO-GC1WuZA', // ⚠️ کلید عمومی (anon key) شما
+                    tableName: 'scores'
+                };
+                
+                this.isSupabaseConfigured = this.supabaseConfig.url !== 'https://mabnzlqnqpjwzmsdqdvq.supabase.co';
+                
+                if (this.isSupabaseConfigured) {
+                    this.supabase = supabase.createClient(this.supabaseConfig.url, this.supabaseConfig.key);
+                    console.log('✅ Supabase connected.');
+                    this.startAutoSync();
+                } else {
+                    console.warn('⚠️ Supabase not configured.');
+                }
+            }
+
+            // تولید شناسه کاربر عددی (نسخه هوشمند برای تلگرام)
+            getNumericUserId() {
+                // اگر بازی داخل تلگرام اجرا شده بود، از آیدی واقعی کاربر استفاده کن
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
+                    return window.Telegram.WebApp.initDataUnsafe.user.id;
+                }
+
+                // اگر در مرورگر معمولی باز شد (برای تست)، از حافظه محلی استفاده کن
+                let userId = localStorage.getItem('bardiyaCoinUserId');
+                if (!userId) {
+                    userId = Math.floor(Math.random() * 1000000000);
+                    localStorage.setItem('bardiyaCoinUserId', userId.toString());
+                }
+                return parseInt(userId);
+            }
+
+            // ارسال امتیاز به Supabase (با نام کاربری واقعی تلگرام)
+            async submitScore() {
+                if (!this.isSupabaseConfigured || this.totalCoins === 0) return;
+                try {
+                    const userId = this.getNumericUserId();
+                    let username = `بازیکن_${userId.toString().substring(0, 6)}`; // نام پیش‌فرض
+
+                    // اگر در تلگرام بود، نام واقعی را بگیر
+                    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
+                        const user = window.Telegram.WebApp.initDataUnsafe.user;
+                        username = user.username || `${user.first_name} ${user.last_name || ''}`.trim();
+                    }
+                    
+                    const { error } = await this.supabase
+                        .from(this.supabaseConfig.tableName)
+                        .upsert({ 
+                            user_id: userId, 
+                            username: username, 
+                            score: this.totalCoins 
+                        }, { onConflict: 'user_id' });
+                    if (error) throw error;
+                    console.log('✅ Score synced.');
+                } catch (error) {
+                    console.error('❌ Failed to sync score:', error.message);
+                }
+            }
+
+            // دریافت و نمایش لیدربورد
+            async fetchAndDisplayLeaderboard() {
+                if (!this.isSupabaseConfigured) return;
+                const list = document.getElementById('leaderboardList');
+                list.innerHTML = `<div class="leaderboard-empty"><div class="empty-text">در حال بارگذاری...</div></div>`;
+
+                try {
+                    const { data, error } = await this.supabase
+                        .from(this.supabaseConfig.tableName)
+                        .select('user_id, username, score')
+                        .order('score', { ascending: false })
+                        .limit(10);
+
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        list.innerHTML = '';
+                        const currentUserId = this.getNumericUserId();
+                        data.forEach((player, index) => {
+                            const isCurrentUser = player.user_id === currentUserId ? 'current-user' : '';
+                            list.innerHTML += `
+                                <div class="leaderboard-item ${isCurrentUser}">
+                                    <div class="player-info">
+                                        <span class="player-rank">${index + 1}</span>
+                                        <span class="player-name">${player.username}</span>
+                                    </div>
+                                    <span class="player-score">${player.score.toLocaleString('fa-IR')}</span>
+                                </div>`;
+                        });
+                    } else {
+                        list.innerHTML = `<div class="leaderboard-empty"><div class="empty-text">لیدربورد خالی است</div></div>`;
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to fetch leaderboard:', error.message);
+                    list.innerHTML = `<div class="leaderboard-empty"><div class="empty-text">خطا در بارگذاری</div></div>`;
+                }
+            }
+
+            startAutoSync() {
+                // همگام‌سازی امتیاز هر ۳۰ ثانیه
+                setInterval(() => this.submitScore(), 30000);
+            }
         }
 
         // شروع بازی
@@ -1224,7 +1333,12 @@
 
         function toggleLeaderboard() {
             const content = document.getElementById('leaderboardContent');
+            const isOpening = !content.classList.contains('show');
             content.classList.toggle('show');
+            // فقط وقتی لیدربورد باز می‌شود، اطلاعات را از سرور بگیر
+            if (isOpening) {
+                game.fetchAndDisplayLeaderboard();
+            }
         }
 
 
@@ -1233,5 +1347,5 @@
             game.resetGame();
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976aa8bd04f432de',t:'MTc1NjQ1NTk0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976af2a27056d9d0',t:'MTc1NjQ1ODk2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
