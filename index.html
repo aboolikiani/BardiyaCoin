@@ -423,6 +423,42 @@
 
 
 
+        .leaderboard-controls {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .refresh-button {
+            background: #059669;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Vazirmatn', sans-serif;
+            box-shadow: 0 3px 10px rgba(5, 150, 105, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .refresh-button:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .refresh-button:active {
+            transform: translateY(0);
+        }
+
+        .refresh-button:disabled {
+            background: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         .leaderboard-list {
             min-height: 200px;
             background: rgba(255, 255, 255, 0.05);
@@ -616,7 +652,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo">🪙 بردیا کوین</div>
+        <div class="logo">بردیا کوین</div>
         <div class="subtitle">Bardiya Coin</div>
     </div>
 
@@ -681,6 +717,11 @@
                 <h3 class="leaderboard-title">🏆 لیدربورد</h3>
             </div>
             <div class="leaderboard-content" id="leaderboardContent">
+                <div class="leaderboard-controls">
+                    <button class="refresh-button" onclick="refreshLeaderboard()">
+                        🔄 بروزرسانی لیدربورد
+                    </button>
+                </div>
                 <div class="leaderboard-list" id="leaderboardList">
                     <div class="leaderboard-empty">
                         <div class="empty-icon">📊</div>
@@ -700,7 +741,7 @@
     </div>
 
     <div class="footer">
-        ساخته شده برای تلگرام • بردیا کوین
+        ساخته شده توسط آبتین • بردیا کوین
     </div>
 
     <script>
@@ -1308,8 +1349,8 @@
             }
 
             startAutoSync() {
-                // همگام‌سازی امتیاز هر ۳۰ ثانیه
-                setInterval(() => this.submitScore(), 30000);
+                // همگام‌سازی امتیاز هر ۵ ثانیه
+                setInterval(() => this.submitScore(), 5000);
             }
         }
 
@@ -1349,6 +1390,20 @@
         function resetGame() {
             game.resetGame();
         }
+
+        function refreshLeaderboard() {
+            const refreshBtn = document.querySelector('.refresh-button');
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = '🔄 در حال بروزرسانی...';
+            
+            // ارسال امتیاز فعلی و سپس بروزرسانی لیدربورد
+            game.submitScore().then(() => {
+                return game.fetchAndDisplayLeaderboard();
+            }).finally(() => {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = '🔄 بروزرسانی لیدربورد';
+            });
+        }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976b502bd02c3718',t:'MTc1NjQ2Mjc5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976b5dacf510db0a',t:'MTc1NjQ2MzM1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
