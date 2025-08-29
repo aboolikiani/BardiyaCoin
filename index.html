@@ -1212,7 +1212,7 @@
                     tableName: 'scores'
                 };
                 
-                this.isSupabaseConfigured = this.supabaseConfig.url !== 'https://mabnzlqnqpjwzmsdqdvq.supabase.co';
+                this.isSupabaseConfigured = this.supabaseConfig.url !== 'YOUR_SUPABASE_URL';
                 
                 if (this.isSupabaseConfigured) {
                     this.supabase = supabase.createClient(this.supabaseConfig.url, this.supabaseConfig.key);
