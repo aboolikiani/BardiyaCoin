@@ -741,7 +741,7 @@
     </div>
 
     <div class="footer">
-        ساخته شده توسط آبتین • بردیا کوین
+        ساخته شده برای تلگرام • بردیا کوین
     </div>
 
     <script>
@@ -883,12 +883,26 @@
                 }, 100);
             }
 
+            // تابع فرمت کردن اعداد با K, M, B
+            formatNumber(num) {
+                if (num >= 1000000000) {
+                    return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+                }
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+                }
+                if (num >= 1000) {
+                    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+                }
+                return num.toString();
+            }
+
             updateDisplay() {
-                document.getElementById('totalCoinsMain').textContent = this.totalCoins.toLocaleString('fa-IR');
-                document.getElementById('coinsPerTap').textContent = this.coinsPerTap.toLocaleString('fa-IR');
-                document.getElementById('totalTaps').textContent = this.totalTaps.toLocaleString('fa-IR');
-                document.getElementById('currentEnergy').textContent = this.currentEnergy.toLocaleString('fa-IR');
-                document.getElementById('maxEnergy').textContent = this.maxEnergy.toLocaleString('fa-IR');
+                document.getElementById('totalCoinsMain').textContent = this.formatNumber(this.totalCoins);
+                document.getElementById('coinsPerTap').textContent = this.formatNumber(this.coinsPerTap);
+                document.getElementById('totalTaps').textContent = this.formatNumber(this.totalTaps);
+                document.getElementById('currentEnergy').textContent = this.formatNumber(this.currentEnergy);
+                document.getElementById('maxEnergy').textContent = this.formatNumber(this.maxEnergy);
                 
                 const energyPercentage = (this.currentEnergy / this.maxEnergy) * 100;
                 document.getElementById('energyFill').style.width = energyPercentage + '%';
@@ -899,9 +913,9 @@
 
             updateUpgradeButtons() {
                 // بروزرسانی متن قیمت‌ها
-                document.getElementById('energyCost').innerHTML = `+100 ظرفیت (${this.energyBoostCost.toLocaleString('fa-IR')} سکه)`;
-                document.getElementById('tapCost').innerHTML = `+1 سکه در تپ (${this.tapBoostCost.toLocaleString('fa-IR')} سکه)`;
-                document.getElementById('regenCost').innerHTML = `+1 انرژی/ثانیه (${this.regenBoostCost.toLocaleString('fa-IR')} سکه)`;
+                document.getElementById('energyCost').innerHTML = `+100 ظرفیت (${this.formatNumber(this.energyBoostCost)} سکه)`;
+                document.getElementById('tapCost').innerHTML = `+1 سکه در تپ (${this.formatNumber(this.tapBoostCost)} سکه)`;
+                document.getElementById('regenCost').innerHTML = `+1 انرژی/ثانیه (${this.formatNumber(this.regenBoostCost)} سکه)`;
                 
                 // بررسی و اعمال قفل
                 const energyBtn = document.getElementById('energyBoostBtn');
@@ -1336,7 +1350,7 @@
                                         <span class="player-rank">${index + 1}</span>
                                         <span class="player-name">${player.username}</span>
                                     </div>
-                                    <span class="player-score">${player.score.toLocaleString('fa-IR')}</span>
+                                    <span class="player-score">${this.formatNumber(player.score)}</span>
                                 </div>`;
                         });
                     } else {
@@ -1405,5 +1419,5 @@
             });
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976b5dacf510db0a',t:'MTc1NjQ2MzM1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976b7f7c73c1d25d',t:'MTc1NjQ2NDczNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
