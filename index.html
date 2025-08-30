@@ -765,7 +765,7 @@
     </div>
 
     <div class="footer">
-        ساخته شده برای تلگرام • بردیا کوین
+        ساخته شده توسط آبتین
     </div>
 
     <script>
@@ -794,6 +794,7 @@
                     this.energyBoostCost = data.energyBoostCost || 100;
                     this.tapBoostCost = data.tapBoostCost || 75;
                     this.regenBoostCost = data.regenBoostCost || 100;
+                    this.warningCount = data.warningCount || 0;
                 } else {
                     this.totalCoins = 0;
                     this.coinsPerTap = 1;
@@ -806,12 +807,19 @@
                     this.energyBoostCost = 100;
                     this.tapBoostCost = 75;
                     this.regenBoostCost = 100;
+                    this.warningCount = 0;
                 }
 
-                // محاسبه انرژی بازیابی شده در طول غیبت
-                const timePassed = Date.now() - this.lastSaveTime;
-                const energyRecovered = Math.floor((timePassed / this.energyRegenSpeed) * this.energyRegenRate);
-                this.currentEnergy = Math.min(this.maxEnergy, this.currentEnergy + energyRecovered);
+                // متغیر برای ضد تقلب امتیاز
+                this.lastSyncedScore = this.totalCoins;
+                
+                // متغیرهای تشخیص اتو کلیکر
+                this.clickTimes = [];
+                this.isGamePaused = false;
+                this.pauseTimeout = null;
+
+                // ❌ بازیابی انرژی آفلاین حذف شد تا از تقلب با تغییر زمان جلوگیری شود
+                // انرژی فقط زمانی پر می‌شود که بازی باز باشد
             }
 
             saveGameData() {
@@ -826,7 +834,8 @@
                     lastSaveTime: Date.now(),
                     energyBoostCost: this.energyBoostCost,
                     tapBoostCost: this.tapBoostCost,
-                    regenBoostCost: this.regenBoostCost
+                    regenBoostCost: this.regenBoostCost,
+                    warningCount: this.warningCount
                 };
                 localStorage.setItem('bardiyaCoinData', JSON.stringify(gameData));
             }
@@ -855,7 +864,26 @@
             }
 
             tapCoin(event) {
+                // بررسی وضعیت توقف بازی
+                if (this.isGamePaused) {
+                    this.showNotification('⛔ بازی متوقف شده! لطفاً صبر کنید...', '#dc2626');
+                    return;
+                }
+
                 if (this.currentEnergy <= 0) {
+                    return;
+                }
+
+                // تشخیص اتو کلیکر
+                const currentTime = Date.now();
+                this.clickTimes.push(currentTime);
+                
+                // حذف کلیک‌های قدیمی‌تر از 1 ثانیه
+                this.clickTimes = this.clickTimes.filter(time => currentTime - time <= 1000);
+                
+                // بررسی تعداد کلیک در ثانیه
+                if (this.clickTimes.length > 20) {
+                    this.handleAutoClickerDetection();
                     return;
                 }
 
@@ -905,6 +933,87 @@
                 setTimeout(() => {
                     coin.style.transform = 'scale(1)';
                 }, 100);
+            }
+
+            // مدیریت تشخیص اتو کلیکر
+            handleAutoClickerDetection() {
+                this.warningCount += 1;
+                console.warn(`🚨 Auto-clicker detected! Warning ${this.warningCount}/3`);
+                
+                if (this.warningCount >= 3) {
+                    // هشدار سوم: ریست کامل بازی
+                    this.showNotification('🚨 اتو کلیکر تشخیص داده شد! بازی ریست می‌شود...', '#dc2626');
+                    setTimeout(() => {
+                        this.forceResetGame();
+                    }, 2000);
+                } else {
+                    // هشدار اول و دوم: توقف 5 ثانیه‌ای
+                    this.showNotification(`🚨 اتو کلیکر تشخیص داده شد! هشدار ${this.warningCount}/3 - بازی 5 ثانیه متوقف می‌شود`, '#dc2626');
+                    this.pauseGame(5000);
+                }
+                
+                // پاک کردن تاریخچه کلیک‌ها
+                this.clickTimes = [];
+                this.saveGameData();
+            }
+
+            // توقف موقت بازی
+            pauseGame(duration) {
+                this.isGamePaused = true;
+                
+                // پاک کردن تایمر قبلی اگر وجود داشت
+                if (this.pauseTimeout) {
+                    clearTimeout(this.pauseTimeout);
+                }
+                
+                this.pauseTimeout = setTimeout(() => {
+                    this.isGamePaused = false;
+                    this.showNotification('✅ بازی از سر گرفته شد!', '#065f46');
+                }, duration);
+            }
+
+            // ریست اجباری بازی (برای هشدار سوم)
+            forceResetGame() {
+                try {
+                    // پاک کردن تایمرها
+                    if (this.energyTimer) {
+                        clearInterval(this.energyTimer);
+                    }
+                    if (this.pauseTimeout) {
+                        clearTimeout(this.pauseTimeout);
+                    }
+                    
+                    // پاک کردن کامل داده‌ها
+                    localStorage.removeItem('bardiyaCoinData');
+                    
+                    // ریست تمام متغیرها
+                    this.totalCoins = 0;
+                    this.coinsPerTap = 1;
+                    this.totalTaps = 0;
+                    this.currentEnergy = 200;
+                    this.maxEnergy = 200;
+                    this.energyRegenRate = 1;
+                    this.energyRegenSpeed = 3000;
+                    this.energyBoostCost = 100;
+                    this.tapBoostCost = 75;
+                    this.regenBoostCost = 100;
+                    this.lastSaveTime = Date.now();
+                    this.warningCount = 0;
+                    this.lastSyncedScore = 0;
+                    this.clickTimes = [];
+                    this.isGamePaused = false;
+                    
+                    // بروزرسانی نمایش
+                    this.updateDisplay();
+                    
+                    // راه‌اندازی مجدد
+                    this.startEnergyRegeneration();
+                    this.saveGameData();
+                    
+                    this.showNotification('🔄 بازی به دلیل استفاده از اتو کلیکر ریست شد!', '#dc2626');
+                } catch (error) {
+                    console.error('Force reset error:', error);
+                }
             }
 
             // تابع فرمت کردن اعداد با K, M, B
@@ -1064,6 +1173,16 @@
                             this.tapBoostCost = 75;
                             this.regenBoostCost = 100;
                             this.lastSaveTime = Date.now();
+                            this.warningCount = 0;
+                            this.lastSyncedScore = 0;
+                            this.clickTimes = [];
+                            this.isGamePaused = false;
+                            
+                            // پاک کردن تایمرهای امنیتی
+                            if (this.pauseTimeout) {
+                                clearTimeout(this.pauseTimeout);
+                                this.pauseTimeout = null;
+                            }
                             
                             // بروزرسانی نمایش
                             this.updateDisplay();
@@ -1289,8 +1408,8 @@
             // ⚙️ تنظیمات Supabase
             initSupabase() {
                 this.supabaseConfig = {
-                    url: 'https://mabnzlqnqpjwzmsdqdvq.supabase.co',      // ⚠️ آدرس پروژه Supabase شما
-                    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hYm56bHFucXBqd3ptc2RxZHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NTM1MjYsImV4cCI6MjA3MjAyOTUyNn0.eK8Sm1Lk6IJ_SPoQQBOc5VjxDwldrxO3AlO-GC1WuZA', // ⚠️ کلید عمومی (anon key) شما
+                    url: 'https://mabnzlqnqpjwzmsdqdvq.supabase.co',
+                    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hYm56bHFucXBqd3ptc2RxZHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NTM1MjYsImV4cCI6MjA3MjAyOTUyNn0.eK8Sm1Lk6IJ_SPoQQBOc5VjxDwldrxO3AlO-GC1WuZA',
                     tableName: 'scores'
                 };
                 
@@ -1321,9 +1440,27 @@
                 return parseInt(userId);
             }
 
-            // ارسال امتیاز به Supabase (با نام کاربری واقعی تلگرام)
+            // ارسال امتیاز به Supabase (با سیستم ضد تقلب)
             async submitScore() {
-                if (!this.isSupabaseConfigured || this.totalCoins === 0) return;
+                if (!this.isSupabaseConfigured || this.totalCoins < 1) return;
+
+                // --- بخش ضد تقلب ---
+                const scoreDifference = this.totalCoins - this.lastSyncedScore;
+                // حداکثر امتیاز ممکن در 5 ثانیه (بازه همگام‌سازی)
+                const maxPossibleIncrease = 1000; // قابل تنظیم
+
+                // اگر اختلاف امتیاز بیشتر از حد مجاز بود
+                if (scoreDifference > maxPossibleIncrease) {
+                    console.warn(`Cheating attempt detected! Score increase of ${scoreDifference} is impossible.`);
+                    // مجازات: برگرداندن امتیاز به آخرین امتیاز سالم ثبت شده
+                    this.totalCoins = this.lastSyncedScore; 
+                    this.updateDisplay();
+                    this.saveGameData();
+                    this.showNotification('🚨 تقلب تشخیص داده شد! امتیاز بازگردانی شد.', '#dc2626');
+                    return; // ارسال امتیاز به سرور متوقف می‌شود
+                }
+                // --- پایان بخش ضد تقلب ---
+
                 try {
                     const userId = this.getNumericUserId();
                     let username = `بازیکن_${userId.toString().substring(0, 6)}`; // نام پیش‌فرض
@@ -1341,8 +1478,13 @@
                             username: username, 
                             score: this.totalCoins 
                         }, { onConflict: 'user_id' });
+                    
                     if (error) throw error;
+                    
                     console.log('✅ Score synced.');
+                    // بعد از ارسال موفق، آخرین امتیاز سالم را آپدیت می‌کنیم
+                    this.lastSyncedScore = this.totalCoins;
+
                 } catch (error) {
                     console.error('❌ Failed to sync score:', error.message);
                 }
@@ -1443,5 +1585,5 @@
             });
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976bc1bf7097367d',t:'MTc1NjQ2NzQ1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9772e3788370496a',t:'MTc1NjU0MjIzMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
